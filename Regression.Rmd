@@ -1,0 +1,101 @@
+---
+title: "Regression"
+author: "Chinki"
+date: "April 23, 2017"
+output:
+  word_document: default
+  pdf_document: default
+---
+```{r}
+# Installing package 
+# install.packages("alr4") If required 
+# library(alr4)  If reqired 
+```
+```{r}
+#Reading the data from package 
+UN11=alr4::UN11
+```
+Un11 is the data of National health, welfare, and education statistics for 210 places, mostly UN members, but also other areas like Hong Kong that are not independent countries.
+```{r}
+#Code to get discription of dataset
+help("UN11")
+```
+```{r}
+#Scatterplot of fertility and ppgdp
+plot(UN11$fertility~UN11$ppgdp,xlab="Per capita gross domestic product in USD",ylab = "Fertility",main="Scatterplot of fertility and ppgdp",col="blue")
+```
+From the scatterplot, It is easy to conclude that fertility and ppgdp is not linear.
+```{r}
+# Correlation test 
+cor.test(UN11$ppgdp,UN11$fertility)
+```
+From the boxcox, We can get transformation.
+We will use log transformation.
+```{r}
+#Tranforming log transformation
+y=log(UN11$fertility)
+x=log(UN11$ppgdp)
+```
+```{r}
+result1=lm(y~x)
+summary(result1)
+```
+y=2.66551+(-0.20715)*x
+
+Next we will look for dignosis of the model.
+1).. Normality test
+```{r}
+r=residuals(result1)
+rs=rstandard(result1)
+f=fitted.values(result1)
+```
+```{r}
+plot(y~x,xlab="log of ppgdp",ylab="log of fertility",col="red")
+```
+```{r}
+plot(y~x,xlab="log of ppgdp",ylab="log of fertility",col="red")
+abline(lm(y~x))
+```
+
+```{r}
+#plot of residuals and fitted value 
+plot(rs~f)
+```
+```{r}
+#Shapiro test for normality 
+shapiro.test(rs)
+```
+As p value is greater than 0.05.So conclude that formality followed by residuals as well as y.
+
+```{r}
+#Brown forsytha test for equal variance
+result1$group=ifelse(x<8,c("1"),c("2"))
+result1$group
+```
+```{r}
+# install.packages("lawstat") if required 
+library(lawstat) 
+levene.test(r,result1$group)
+
+```
+As p value is greter than 0.05. Equal varinace assumption is satisfied.
+```{r}
+#constant variance test
+ # install.packages("lmtest")
+library(lmtest)
+library(car)
+ncvTest(result1)
+```
+As p value is grester than 0.05. The constant variance assumption is satisfied.
+
+so all the assumptions are good and satisfied. 
+This is perfect example for regression.Transformation is working good.
+
+```{r}
+library(sqldf)
+UN11
+
+un11_Asia=sqldf("select *from UN11 where group='Asia'")
+
+```
+
