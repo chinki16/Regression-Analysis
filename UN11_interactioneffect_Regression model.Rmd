@@ -1,0 +1,66 @@
+---
+title: "UN11_interactioneffect_Regression model"
+author: "Chinki"
+date: "May 10, 2017"
+output: word_document
+---
+Un11 is the data of National health, welfare, and education statistics for 210 places, mostly UN members, but also other areas like Hong Kong that are not independent countries.
+```{r}
+#Reading the data set from R studio
+library(alr4)
+Un11=alr4::UN11
+```
+
+```{r}
+#Boxplot of Life Expectancy for each group
+boxplot(Un11$lifeExpF~Un11$group,main="Boxplot of life Expectancy for each group",ylab="Life Expectancy",xlab="Group",col="blue")
+```
+```{r}
+#Running a regression model with interaction
+un11_lm=lm(lifeExpF~log(ppgdp)+factor(group)+log(ppgdp)*factor(group), data=Un11)
+summary(un11_lm)
+```
+```{r}
+#Running a regression model without interaction
+un11_lm2=lm(lifeExpF~log(ppgdp)+factor(group), data=Un11)
+summary(un11_lm2)
+```
+Model is significant in both cases.
+
+Test that interaction is required on we can drop.
+```{r}
+#Anova model
+anova(un11_lm,un11_lm2)
+```
+H0: Beta4=beta5=0
+Ha: not all ??s in H0 equal zero
+Fail to reject h0 & conclude that interaction effect is not significant in the model so we will drop interaction effect.
+```{r}
+#Residuals plots
+r=residuals(un11_lm2)
+f=fitted.values(un11_lm2)
+plot(r~f,col="red")
+abline(lm(r~f))
+```
+```{r}
+#QQplot of residuals 
+rs=rstandard(un11_lm2)
+qqnorm(rs)
+qqline(rs,col="red")
+```
+```{r}
+#Fitted & rstandazied residual plot
+plot(f,rs)
+```
+```{r}
+#Residuals plot together
+par(mfrow=c(2,2))
+plot(un11_lm2,which=1:4)
+```
+```{r}
+#Regression band 
+library(ggplot2)
+ggplot(data=UN11,aes(x=log(ppgdp),y=lifeExpF,colours=factor(group)))+stat_smooth(method = lm,fullrange = FALSE)+geom_point()
+```
+
+
