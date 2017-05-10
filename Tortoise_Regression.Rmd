@@ -1,0 +1,89 @@
+---
+title: "Tortoise Dataset_Regression"
+author: "Chinki"
+date: "May 10, 2017"
+output: word_document
+---
+Ashton et al. (2007) measured the carapace length (in mm) of 18 female gopher
+tortoises (Gopherus polyphemus) in Okeeheelee County Park, Florida, and X-rayed
+them to count the number of eggs in each.
+```{r}
+#Reading the data set
+Tortoise=read.table("C:/Computational Statistics/3rd Quater/Regression/Lab/tortoise.txt")
+colnames(Tortoise)=c("length","eggs")
+```
+```{r}
+#Getting structure of dataset
+str(Tortoise)
+```
+Dataset contains to integer variables.
+```{r}
+#Getting summary of the dataset
+summary(Tortoise)
+```
+```{r}
+plot(Tortoise$length,Tortoise$eggs,ylim = c(0,20),col="red")
+abline(lm(Tortoise$eggs~Tortoise$length))
+```
+```{r}
+#Correlation Test
+cor.test(Tortoise$eggs,Tortoise$length)
+```
+Eggs and length is 12% correlated.
+```{r}
+#Running Simple linera regression
+Tortoise_lm=lm(Tortoise$eggs~Tortoise$length)
+summary(Tortoise_lm)
+```
+Model is not significant as given from pvalues.
+```{r}
+#Running polynomial Regression (Used False for orthogonal polynomial)
+Tortoise_lm2=lm(Tortoise$eggs~poly(Tortoise$length,2,raw=FALSE))
+summary(Tortoise_lm2)
+```
+Sencond order of the lenght is significant and model is also significant.
+
+Diagnostics of the model
+```{r}
+#Getting residuals 
+r=residuals(Tortoise_lm2)
+plot(Tortoise$length,r)
+```
+```{r}
+length2=Tortoise$length*Tortoise$length
+plot(length2,r)
+```
+```{r}
+#Getting fitted value
+f=fitted.values(Tortoise_lm2)
+plot(f,r)
+```
+There is not clear representation of any scatterplot ,but seems to symetric.
+```{r}
+#Boxplot of residuals
+boxplot(r)
+```
+Symmetric boxplot with no outliers.
+Lack of fitness test
+```{r}
+#Model with lenght & Length2
+R1=lm(Tortoise$eggs~poly(Tortoise$length,2,raw=FALSE))
+length1=Tortoise$length
+Length2=Tortoise$length^2
+F=lm(Tortoise$eggs~factor(length1)+factor(length2))
+anova(R1,F)
+```
+We fail to reject null H0: Y= ??0 +??1X1+??2X1*X1  at 95% level of significant. It apperas that the variable length & length^2 do not contribute significant information to the number of eggs. 
+
+Coefficicent of determination of the model is 35%, which means 35% eggs are explained by the length*length.
+
+As pvalue of length is 0.5408 & Pvalue of lenght*lenght is 0.004, length*lenght is dominating lenght.
+```{r}
+#Test to drop length
+R1=lm(Tortoise$eggs~poly(Tortoise$length,2,raw=FALSE))
+F1=lm(Tortoise$eggs~length1+length2)
+anova(R1,F1)
+```
+We fail to reject reject null hypothesis, H0: ??1=0 at the 5% level of significance. It appears that the variables lenght do not contribute significant information to the the number of eggs. 
+
+
