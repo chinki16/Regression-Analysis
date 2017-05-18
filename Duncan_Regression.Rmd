@@ -1,0 +1,154 @@
+---
+title: "Duncan"
+author: "Chinki"
+date: "May 16, 2017"
+output: word_document
+---
+The Duncan data frame has 45 rows and 4 columns. Data on the
+prestige and other characteristics of 45 U. S. occupations in 1950.
+??? This data frame contains the following columns:
+- type : Type of occupation. A factor with the following levels: prof,
+professional and managerial; wc, white-collar; bc, blue-collar.
+- income: Percent of males in occupation earning $3500 or more
+in 1950.
+- education: Percent of males in occupation in 1950 who were
+high-school graduates.
+- prestige: Percent of raters in NORC study rating occupation as
+excellent or good in prestige.
+
+??? Source: Duncan, O. D. (1961) A socioeconomic index for all occupations. In Reiss, A. J., Jr. (Ed.)
+Occupations and Social Status. Free Press [Table VI-1].
+```{r}
+#Reading the data
+library(car)
+#Getting heads of the data
+head(Duncan)
+```
+```{r}
+par(mfrow=c(2,2))
+hist(Duncan$income,col="red")
+Boxplot(Duncan$income,col="blue")
+#Histogram of the data
+hist(Duncan$education ,col="red")
+#Boxplot of eduaction
+Boxplot(Duncan$education,col="blue")
+
+```
+```{r}
+par(mfrow=c(1,1))
+Boxplot(Duncan$prestige, Duncan$type)
+
+```
+There are some outliers in the data.Lets see outliers
+```{r}
+#Getting outliers
+Duncan[c(27,19,9,24),] 
+```
+
+
+```{r}
+scatterplotMatrix(~Duncan$prestige+Duncan$income+
+Duncan$education)
+```
+```{r}
+#Running regression model
+Duncan_lm1 = lm(Duncan$prestige~ poly(Duncan$income,2) +
+Duncan$education+factor(Duncan$type))
+summary(Duncan_lm1)
+
+```
+From the above output, model is significant & coefficents are also significant except income2.
+R square is 90.37%.
+
+```{r}
+#Regression model without polynomial coefficient
+Duncan_lm2 = lm(Duncan$prestige~ Duncan$income +
+Duncan$education+factor(Duncan$type))
+summary(Duncan_lm2)
+
+```
+All the coefficients are significant except intercept.model is also significant. R square is slightly better.
+
+```{r}
+#Model evaluvation
+anova(Duncan_lm1, Duncan_lm2)
+```
+We fail to reject null hypothesis & conclude that we can take square of income is 0.
+
+#Diagnostics
+```{r}
+#Residuals plot
+residualPlots(Duncan_lm2)
+```
+Black dot is perfect fitted plot & red dot is fitted plot for our model.
+```{r}
+#Marginal plots
+marginalModelPlots(Duncan_lm2)
+```
+The plots of the response versus the individual predictors display the
+conditional distribution of the response given each predictor, ignoring
+the other predictors; these are marginal plots in the sense they show
+the marginal relationship between the response and the predictor. 
+```{r}
+qqPlot(Duncan_lm2, id.n = 2)
+```
+```{r}
+#Outliers test for extreme outliers
+outlierTest(Duncan_lm2)
+
+```
+Residual 6 is significant as pvalue is less than 0.05. So we will run model without 6.
+```{r}
+#Different ways to get outliers
+influenceIndexPlot(Duncan_lm2, id.n=2)
+```
+```{r}
+#Getting outliers
+influencePlot(Duncan_lm2, id.n=2)
+```
+Big bubbles are outliers that effect more the data extreme.
+```{r}
+#Getting outliers
+Duncan[6,]
+```
+Minister is extreme outlier in this case.
+```{r}
+#Model without outlier
+Duncan_lm3=update(Duncan_lm2, subset = rownames(Duncan)
+!="minister") 
+summary(Duncan_lm3)
+```
+```{r}
+#Comparing models witht he outlier removed
+compareCoefs(Duncan_lm2, Duncan_lm3)
+```
+Removing the outlier "minister" which was the 6th observation increases the regression
+coefficient for income by 20% and decreases the coefficient for education.
+The effect on the standard errors are small.
+```{r}
+#Checking for constancy for variance
+ncvTest(Duncan_lm2)
+```
+As pvalue is greater than 0.05.erroe has constant variance 
+```{r}
+#Step Function
+#Null function( with only intercept)
+null=lm(prestige~1, data=Duncan)
+summary(null)
+```
+```{r}
+#Full model
+full = lm(prestige~income+education+factor(type) , data= Duncan)
+summary(full)
+```
+```{r}
+step(null, scope=list(lower=null, upper=full),
+direction="forward")
+
+```
+AIC is low for last model so this is appropriate model.
+
+
+
+
+
