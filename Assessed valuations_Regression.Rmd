@@ -1,0 +1,93 @@
+---
+title: "Assessed valuations"
+author: "Chinki"
+date: "May 10, 2017"
+output: word_document
+---
+
+ A tax consultant studied the current relation between selling price and assessed valuation of one-family residential dwellings in a large taX district by obtaining data for a random sample of 16 recent "arm's-length" sales transactions of one-family dwellings located on comer lots and for a random sample of 48 recent sales of one-family dwellings not located on corger lots. In the data that follow, both selling price (Y) and assessecl valuation (Xd are expressed in thousand dollars, whereas lot location (X2) is coded 1 for comer lots and 0 for non-comer lots. 
+```{r}
+#Reading the data from server
+Assessed=read.table("https://netfiles.umn.edu/users/nacht001/www/nachtsheim/Kutner/Chapter%20%208%20Data%20Sets/CH08PR24.txt")
+colnames(Assessed)=c("y","x1","x2")
+```
+```{r}
+#Getting structure of the dataset
+str(Assessed)
+```
+```{r}
+#Converting x2 as factor
+as.factor(Assessed$x2)
+```
+1- Boxplot of  to compare the selling price for corner and non-corner plots
+
+```{r}
+#Boxplot of selling price group wise
+boxplot(Assessed$y~Assessed$x2,xlab="group",main="Boxplot of selling price",col=c("blue","red"))
+```
+From the boxplot, I can observe that boxplot of selling price for corners are symetric & have no outliers.Boxplot of non corners are left skewed and it does not have outliers.
+```{r}
+#Scatterplot by two population
+library(lattice)
+xyplot(Assessed$y~Assessed$x1 | Assessed$x2,pch=20)
+```
+```{r}
+#Correlation 
+cor(Assessed$y,Assessed$x1)
+```
+Correlation between y & X1 is 84.45%.
+```{r}
+#Plot of responce vrs predictor variable 
+plot(Assessed$y~Assessed$x1,col="red")
+```
+```{r}
+#Regression model 
+Result=lm(Assessed$y~Assessed$x1+factor(Assessed$x2)+factor(Assessed$x1*Assessed$x2))
+Result
+```
+```{r}
+#Summary of regression function
+summary(Result)
+```
+x1 ,x2 & interaction is significant as well as model is also significant.R square is 81.45 %.
+```{r}
+#Regression model without interaction
+Result1=lm(Assessed$y~Assessed$x1+factor(Assessed$x2))
+Result1
+```
+```{r}
+#Summary of model
+summary(Result1)
+```
+Model is significant and x1 & x2 is also significant.R square is 79.49%.
+```{r}
+#Residuals 
+r=residuals(Result)
+f=fitted.values(Result)
+plot(r,f,xlab = "Residuals ",ylab = "Fitted value",main = "scatterplot of residuals & Fittedvalue",col="blue")
+```
+Constancy of variance seems to be true for this dataset.
+```{r}
+#Test for normality 
+qqnorm(r)
+qqline(r)
+```
+From qqplot normality seems to be satisfied to confirm this we will run shapiro test.
+```{r}
+#Shapiro test for normality checking 
+shapiro.test(r)
+```
+As p value is more than 0.05.Fail to reject null & conclude that error term are normaly distributed.
+```{r}
+#Lack of fit of model
+full=aov(Assessed$y~factor(Assessed$x1)+factor(Assessed$x2)+factor(Assessed$x1*Assessed$x2))
+reduce=lm(Assessed$y~Assessed$x1+factor(Assessed$x2)+Assessed$x1*factor(Assessed$x2))
+Anova(full,reduce)
+```
+```{r}
+library(ggplot2)
+ggplot(Assessed,aes(Assessed$x1,Assessed$y))+geom_point(aes(colour= Assessed$x2, shape= Assessed$x2), size = 3, alpha = .8)+geom_smooth(method="lm", se= F, size = 1, aes(linetype = Assessed$x2, group = Assessed$x2)) +geom_smooth(method = 'lm',size = 1, colour = 'black', se = F) + theme_bw()
+```
+
+
+
